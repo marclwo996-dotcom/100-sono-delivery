@@ -5,13 +5,15 @@ import { produtos } from '@/lib/data'
 import ItemCardapio from './ItemCardapio'
 
 const categorias = [
+  { id: 'pizzas', nome: 'Pizzas' },
   { id: 'lanches', nome: 'Lanches' },
-  { id: 'bebidas', nome: 'Bebidas' },
-  { id: 'adicionais', nome: 'Adicionais' }
+  { id: 'lanches-especiais', nome: 'Lanches Especiais' },
+  { id: 'porcoes', nome: 'Porções' },
+  { id: 'combos', nome: 'Combos' }
 ]
 
 export default function Cardapio() {
-  const [categoriaAtiva, setCategoriaAtiva] = useState('lanches')
+  const [categoriaAtiva, setCategoriaAtiva] = useState('pizzas')
 
   const produtosFiltrados = produtos.filter(p => p.categoria === categoriaAtiva)
 
