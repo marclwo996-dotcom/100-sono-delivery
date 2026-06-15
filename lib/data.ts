@@ -8,10 +8,24 @@ export const TAMANHOS_PIZZA: TamanhoPizza[] = [
 ]
 
 export const PRECO_BORDA = {
-  'P': 6.00,
-  'M': 6.00,
-  'G': 8.00,
-  'F': 8.00
+  'cheddar': {
+    'P': 6.00,
+    'M': 6.00,
+    'G': 8.00,
+    'F': 8.00
+  },
+  'catupiry': {
+    'P': 6.00,
+    'M': 6.00,
+    'G': 8.00,
+    'F': 8.00
+  },
+  'sem': {
+    'P': 0,
+    'M': 0,
+    'G': 0,
+    'F': 0
+  }
 }
 
 export const produtos: Produto[] = [
