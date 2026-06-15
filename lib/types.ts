@@ -14,13 +14,15 @@ export interface TamanhoPizza {
   preco: number
 }
 
+export type TipoBorda = 'sem' | 'cheddar' | 'catupiry'
+
 export interface ItemCarrinho {
   produto: Produto
   quantidade: number
   observacao?: string
   tamanhoPizza?: 'P' | 'M' | 'G' | 'F'
-  temBorda?: boolean
-  saboresSelecionados?: string[]  // Array de IDs das pizzas
+  saboresSelecionados?: string[]
+  tipoBorda?: TipoBorda
   precoFinal?: number
 }
 
