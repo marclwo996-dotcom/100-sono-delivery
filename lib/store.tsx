@@ -8,7 +8,13 @@ interface StoreContextType {
   carrinho: ItemCarrinho[]
   pedidos: Pedido[]
   online: boolean
-  adicionarAoCarrinho: (produto: Produto, observacao?: string, tamanhoPizza?: 'P' | 'M' | 'G' | 'F', temBorda?: boolean) => void
+  adicionarAoCarrinho: (
+    produto: Produto, 
+    observacao?: string, 
+    tamanhoPizza?: 'P' | 'M' | 'G' | 'F', 
+    temBorda?: boolean,
+    saboresSelecionados?: string[]
+  ) => void
   removerDoCarrinho: (produtoId: string) => void
   alterarQuantidade: (produtoId: string, quantidade: number) => void
   limparCarrinho: () => void
@@ -24,7 +30,7 @@ const CANAL_PEDIDOS = 'canal-pedidos-100-sono'
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [carrinho, setCarrinho] = useState<ItemCarrinho[]>([])
   const [pedidos, setPedidos] = useState<Pedido[]>([])
-  const [online, setOnline] = useState(true)
+  const [online] = useState(true)
 
   // Carregar dados do localStorage ao iniciar
   useEffect(() => {
@@ -98,13 +104,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     produto: Produto, 
     observacao?: string, 
     tamanhoPizza?: 'P' | 'M' | 'G' | 'F',
-    temBorda?: boolean
+    temBorda?: boolean,
+    saboresSelecionados?: string[]
   ) {
     setCarrinho(prev => {
       const existe = prev.find(item => {
         if (item.produto.id !== produto.id) return false
         if (tamanhoPizza) {
-          return item.tamanhoPizza === tamanhoPizza && item.temBorda === temBorda
+          // Comparar sabores (ordem não importa)
+          const saboresIguais = 
+            item.tamanhoPizza === tamanhoPizza &&
+            item.temBorda === temBorda &&
+            JSON.stringify(item.saboresSelecionados?.sort()) === 
+            JSON.stringify(saboresSelecionados?.sort())
+          return saboresIguais
         }
         return true
       })
@@ -112,7 +125,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       if (existe) {
         return prev.map(item => {
           if (tamanhoPizza) {
-            if (item.tamanhoPizza === tamanhoPizza && item.temBorda === temBorda) {
+            const saboresIguais = 
+              item.tamanhoPizza === tamanhoPizza &&
+              item.temBorda === temBorda &&
+              JSON.stringify(item.saboresSelecionados?.sort()) === 
+              JSON.stringify(saboresSelecionados?.sort())
+            
+            if (saboresIguais) {
               return { ...item, quantidade: item.quantidade + 1 }
             }
           } else if (item.produto.id === produto.id) {
@@ -128,6 +147,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         observacao,
         tamanhoPizza,
         temBorda,
+        saboresSelecionados,
         precoFinal: produto.preco
       }]
     })
