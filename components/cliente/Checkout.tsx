@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ArrowLeft, MessageCircle, Copy, CheckCircle, DollarSign } from 'lucide-react'
+import { ArrowLeft, MessageCircle } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import { TAXA_ENTREGA } from '@/lib/data'
 import { formatarPreco } from '@/lib/utils'
@@ -20,13 +20,9 @@ export default function Checkout({ onVoltar, onSucesso }: CheckoutProps) {
   const [referencia, setReferencia] = useState('')
   const [pagamento, setPagamento] = useState<'pix' | 'cartao' | 'dinheiro'>('pix')
   const [troco, setTroco] = useState('')
-  const [pixCopiado, setPixCopiado] = useState(false)
 
   const taxaEntrega = TAXA_ENTREGA
   const total = totalCarrinho + taxaEntrega
-
-  // Chave PIX da loja (configure aqui)
-  const CHAVE_PIX = 'marclwo996@gmail.com' // Substitua pela chave PIX real da loja
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -39,10 +35,6 @@ export default function Checkout({ onVoltar, onSucesso }: CheckoutProps) {
     if (pagamento === 'dinheiro' && !troco) {
       alert('Informe para quanto precisa de troco')
       return
-    }
-
-    if (pagamento === 'pix') {
-      alert('Por favor, realize o pagamento via PIX e aguarde a confirmação do atendente.')
     }
 
     criarPedido({
@@ -65,12 +57,6 @@ export default function Checkout({ onVoltar, onSucesso }: CheckoutProps) {
     alert('Pedido realizado com sucesso!')
   }
 
-  function copiarChavePix() {
-    navigator.clipboard.writeText(CHAVE_PIX)
-    setPixCopiado(true)
-    setTimeout(() => setPixCopiado(false), 3000)
-  }
-
   function finalizarWhatsApp() {
     const itensTexto = carrinho
       .map(item => `• ${item.quantidade}x ${item.produto.nome}${item.observacao ? ` (${item.observacao})` : ''} - ${formatarPreco(item.produto.preco * item.quantidade)}`)
@@ -91,7 +77,6 @@ export default function Checkout({ onVoltar, onSucesso }: CheckoutProps) {
     window.open(url, '_blank')
   }
 
-  // Sugestões de troco
   const sugestoesTroco = [50, 100, 200].filter(valor => valor > total)
 
   return (
@@ -190,61 +175,6 @@ export default function Checkout({ onVoltar, onSucesso }: CheckoutProps) {
             </label>
           </div>
 
-          {/* PIX - Mostrar chave após seleção */}
-          {pagamento === 'pix' && (
-            <div className="mt-4 p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
-              <div className="flex items-center gap-2 mb-3">
-                <DollarSign className="text-blue-600" size={20} />
-                <h4 className="font-bold text-blue-900">Dados para Pagamento PIX</h4>
-              </div>
-              
-              <div className="space-y-3">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Chave PIX (Email):</p>
-                  <div className="flex items-center gap-2">
-                    <code className="flex-1 bg-white px-3 py-2 rounded border font-mono text-sm">
-                      {CHAVE_PIX}
-                    </code>
-                    <button
-                      type="button"
-                      onClick={copiarChavePix}
-                      className={`px-4 py-2 rounded font-medium transition-colors ${
-                        pixCopiado 
-                          ? 'bg-green-500 text-white' 
-                          : 'bg-blue-600 hover:bg-blue-700 text-white'
-                      }`}
-                    >
-                      {pixCopiado ? (
-                        <span className="flex items-center gap-1">
-                          <CheckCircle size={16} />
-                          Copiado!
-                        </span>
-                      ) : (
-                        <span className="flex items-center gap-1">
-                          <Copy size={16} />
-                          Copiar
-                        </span>
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="bg-white p-3 rounded border">
-                  <p className="text-sm text-gray-600 mb-1">Valor a pagar:</p>
-                  <p className="text-2xl font-bold text-blue-600">{formatarPreco(total)}</p>
-                </div>
-
-                <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
-                  <p className="text-sm text-yellow-800">
-                    <strong>Importante:</strong> Após realizar o pagamento, aguarde a confirmação do atendente via WhatsApp. 
-                    Seu pedido será preparado assim que o pagamento for confirmado.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Dinheiro - Campo de troco melhorado */}
           {pagamento === 'dinheiro' && (
             <div className="mt-4 space-y-3">
               <input
