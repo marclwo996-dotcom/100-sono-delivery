@@ -2,14 +2,25 @@ export interface Produto {
   id: string
   nome: string
   preco: number
-  categoria: 'lanches' | 'bebidas' | 'adicionais'
+  categoria: 'pizzas' | 'lanches' | 'lanches-especiais' | 'porcoes' | 'combos' | 'bebidas' | 'adicionais'
   descricao?: string
+  observacoes?: string
+  temTamanhos?: boolean
+}
+
+export interface TamanhoPizza {
+  id: 'P' | 'M' | 'G' | 'F'
+  nome: string
+  preco: number
 }
 
 export interface ItemCarrinho {
   produto: Produto
   quantidade: number
   observacao?: string
+  tamanhoPizza?: 'P' | 'M' | 'G' | 'F'
+  temBorda?: boolean
+  precoFinal?: number
 }
 
 export interface Pedido {
