@@ -7,6 +7,7 @@ import { gerarId } from './utils'
 interface StoreContextType {
   carrinho: ItemCarrinho[]
   pedidos: Pedido[]
+  online: boolean
   adicionarAoCarrinho: (produto: Produto, observacao?: string, tamanhoPizza?: 'P' | 'M' | 'G' | 'F', temBorda?: boolean) => void
   removerDoCarrinho: (produtoId: string) => void
   alterarQuantidade: (produtoId: string, quantidade: number) => void
@@ -23,6 +24,7 @@ const CANAL_PEDIDOS = 'canal-pedidos-100-sono'
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [carrinho, setCarrinho] = useState<ItemCarrinho[]>([])
   const [pedidos, setPedidos] = useState<Pedido[]>([])
+  const [online, setOnline] = useState(true)
 
   // Carregar dados do localStorage ao iniciar
   useEffect(() => {
@@ -211,6 +213,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       value={{
         carrinho,
         pedidos,
+        online,
         adicionarAoCarrinho,
         removerDoCarrinho,
         alterarQuantidade,
