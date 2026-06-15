@@ -20,6 +20,7 @@ export interface ItemCarrinho {
   observacao?: string
   tamanhoPizza?: 'P' | 'M' | 'G' | 'F'
   temBorda?: boolean
+  saboresSelecionados?: string[]  // Array de IDs das pizzas
   precoFinal?: number
 }
 
