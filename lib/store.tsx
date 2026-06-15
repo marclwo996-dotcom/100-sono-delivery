@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
-import { ItemCarrinho, Pedido, Produto, StatusPedido } from './types'
+import { ItemCarrinho, Pedido, Produto, StatusPedido, TipoBorda } from './types'
 import { gerarId } from './utils'
 
 interface StoreContextType {
@@ -12,8 +12,8 @@ interface StoreContextType {
     produto: Produto, 
     observacao?: string, 
     tamanhoPizza?: 'P' | 'M' | 'G' | 'F', 
-    temBorda?: boolean,
-    saboresSelecionados?: string[]
+    saboresSelecionados?: string[],
+    tipoBorda?: TipoBorda
   ) => void
   removerDoCarrinho: (produtoId: string) => void
   alterarQuantidade: (produtoId: string, quantidade: number) => void
@@ -32,31 +32,22 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [pedidos, setPedidos] = useState<Pedido[]>([])
   const [online] = useState(true)
 
-  // Carregar dados do localStorage ao iniciar
   useEffect(() => {
     const carrinhoSalvo = localStorage.getItem('carrinho')
     const pedidosSalvos = localStorage.getItem('pedidos')
     
-    if (carrinhoSalvo) {
-      setCarrinho(JSON.parse(carrinhoSalvo))
-    }
-    
-    if (pedidosSalvos) {
-      setPedidos(JSON.parse(pedidosSalvos))
-    }
+    if (carrinhoSalvo) setCarrinho(JSON.parse(carrinhoSalvo))
+    if (pedidosSalvos) setPedidos(JSON.parse(pedidosSalvos))
   }, [])
 
-  // Salvar carrinho no localStorage
   useEffect(() => {
     localStorage.setItem('carrinho', JSON.stringify(carrinho))
   }, [carrinho])
 
-  // Salvar pedidos no localStorage
   useEffect(() => {
     localStorage.setItem('pedidos', JSON.stringify(pedidos))
   }, [pedidos])
 
-  // Configurar BroadcastChannel para comunicação em tempo real
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const canal = new BroadcastChannel(CANAL_PEDIDOS)
@@ -87,7 +78,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   function tocarAlerta() {
     const audio = new Audio('/alerta.mp3')
     audio.play().catch(() => {
-      // Fallback: beep simples
       const contexto = new (window.AudioContext || (window as any).webkitAudioContext)()
       const oscilador = contexto.createOscillator()
       const ganho = contexto.createGain()
@@ -104,20 +94,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     produto: Produto, 
     observacao?: string, 
     tamanhoPizza?: 'P' | 'M' | 'G' | 'F',
-    temBorda?: boolean,
-    saboresSelecionados?: string[]
+    saboresSelecionados?: string[],
+    tipoBorda?: TipoBorda
   ) {
     setCarrinho(prev => {
       const existe = prev.find(item => {
         if (item.produto.id !== produto.id) return false
         if (tamanhoPizza) {
-          // Comparar sabores (ordem não importa)
-          const saboresIguais = 
-            item.tamanhoPizza === tamanhoPizza &&
-            item.temBorda === temBorda &&
-            JSON.stringify(item.saboresSelecionados?.sort()) === 
-            JSON.stringify(saboresSelecionados?.sort())
-          return saboresIguais
+          return item.tamanhoPizza === tamanhoPizza &&
+                 item.tipoBorda === tipoBorda &&
+                 JSON.stringify(item.saboresSelecionados?.sort()) === 
+                 JSON.stringify(saboresSelecionados?.sort())
         }
         return true
       })
@@ -125,15 +112,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       if (existe) {
         return prev.map(item => {
           if (tamanhoPizza) {
-            const saboresIguais = 
-              item.tamanhoPizza === tamanhoPizza &&
-              item.temBorda === temBorda &&
-              JSON.stringify(item.saboresSelecionados?.sort()) === 
-              JSON.stringify(saboresSelecionados?.sort())
-            
-            if (saboresIguais) {
-              return { ...item, quantidade: item.quantidade + 1 }
-            }
+            const match = item.tamanhoPizza === tamanhoPizza &&
+                          item.tipoBorda === tipoBorda &&
+                          JSON.stringify(item.saboresSelecionados?.sort()) === 
+                          JSON.stringify(saboresSelecionados?.sort())
+            if (match) return { ...item, quantidade: item.quantidade + 1 }
           } else if (item.produto.id === produto.id) {
             return { ...item, quantidade: item.quantidade + 1 }
           }
@@ -146,8 +129,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         quantidade: 1,
         observacao,
         tamanhoPizza,
-        temBorda,
         saboresSelecionados,
+        tipoBorda,
         precoFinal: produto.preco
       }]
     })
@@ -185,7 +168,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setPedidos(prev => [...prev, novoPedido])
     limparCarrinho()
 
-    // Notificar outros contextos (cozinha)
     if (typeof window !== 'undefined') {
       const canal = new BroadcastChannel(CANAL_PEDIDOS)
       canal.postMessage({ type: 'NOVO_PEDIDO', pedido: novoPedido })
@@ -212,7 +194,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         p.id === pedidoId ? { ...p, status: novoStatus } : p
       )
 
-      // Notificar outros contextos
       if (typeof window !== 'undefined') {
         const canal = new BroadcastChannel(CANAL_PEDIDOS)
         canal.postMessage({ type: 'ATUALIZAR_STATUS', pedidoId, status: novoStatus })
