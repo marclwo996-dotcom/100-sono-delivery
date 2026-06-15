@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ArrowLeft, MessageCircle } from 'lucide-react'
+import { ArrowLeft, MessageCircle, Copy, CheckCircle, DollarSign } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import { TAXA_ENTREGA } from '@/lib/data'
 import { formatarPreco } from '@/lib/utils'
@@ -20,27 +20,32 @@ export default function Checkout({ onVoltar, onSucesso }: CheckoutProps) {
   const [referencia, setReferencia] = useState('')
   const [pagamento, setPagamento] = useState<'pix' | 'cartao' | 'dinheiro'>('pix')
   const [troco, setTroco] = useState('')
+  const [pixCopiado, setPixCopiado] = useState(false)
 
   const taxaEntrega = TAXA_ENTREGA
   const total = totalCarrinho + taxaEntrega
-  const whatsappLoja = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER
 
-  function validarFormulario() {
+  // Chave PIX da loja (configure aqui)
+  const CHAVE_PIX = 'marclwo996@gmail.com' // Substitua pela chave PIX real da loja
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+
     if (!nome || !rua || !numero || !bairro) {
-      alert('Por favor, preencha todos os campos obrigatorios')
-      return false
+      alert('Por favor, preencha todos os campos obrigatórios')
+      return
     }
 
     if (pagamento === 'dinheiro' && !troco) {
       alert('Informe para quanto precisa de troco')
-      return false
+      return
     }
 
-    return true
-  }
+    if (pagamento === 'pix') {
+      alert('Por favor, realize o pagamento via PIX e aguarde a confirmação do atendente.')
+    }
 
-  function dadosPedido() {
-    return {
+    criarPedido({
       cliente: {
         nome,
         rua,
@@ -54,44 +59,40 @@ export default function Checkout({ onVoltar, onSucesso }: CheckoutProps) {
       total,
       pagamento,
       troco: pagamento === 'dinheiro' ? parseFloat(troco) : undefined
-    }
-  }
+    })
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!validarFormulario()) return
-
-    const pedido = await criarPedido(dadosPedido())
     onSucesso()
-    window.location.href = `/pedido/${pedido.id}`
+    alert('Pedido realizado com sucesso!')
   }
 
-  async function finalizarWhatsApp() {
-    if (!validarFormulario()) return
+  function copiarChavePix() {
+    navigator.clipboard.writeText(CHAVE_PIX)
+    setPixCopiado(true)
+    setTimeout(() => setPixCopiado(false), 3000)
+  }
 
-    const pedido = await criarPedido(dadosPedido())
-    const acompanhamentoUrl = `${window.location.origin}/pedido/${pedido.id}`
+  function finalizarWhatsApp() {
     const itensTexto = carrinho
-      .map(item => `- ${item.quantidade}x ${item.produto.nome} - ${formatarPreco(item.produto.preco * item.quantidade)}`)
+      .map(item => `• ${item.quantidade}x ${item.produto.nome}${item.observacao ? ` (${item.observacao})` : ''} - ${formatarPreco(item.produto.preco * item.quantidade)}`)
       .join('\n')
 
-    const mensagem = `*Novo Pedido #${pedido.numero} - 100 Sono Delivery*\n\n` +
+    const mensagem = `*Novo Pedido - 100 Sono Delivery*\n\n` +
       `*Cliente:* ${nome}\n` +
-      `*Endereco:* ${rua}, ${numero} - ${bairro}\n` +
-      (referencia ? `*Referencia:* ${referencia}\n` : '') +
+      `*Endereço:* ${rua}, ${numero} - ${bairro}\n` +
+      (referencia ? `*Referência:* ${referencia}\n` : '') +
       `\n*Itens:*\n${itensTexto}\n\n` +
       `*Subtotal:* ${formatarPreco(totalCarrinho)}\n` +
       `*Taxa de entrega:* ${formatarPreco(taxaEntrega)}\n` +
       `*Total:* ${formatarPreco(total)}\n\n` +
-      `*Pagamento:* ${pagamento.toUpperCase()}` +
-      (pagamento === 'dinheiro' && troco ? `\nTroco para: ${formatarPreco(parseFloat(troco))}` : '') +
-      `\n\n*Acompanhar pedido:* ${acompanhamentoUrl}`
+      `*Pagamento:* ${pagamento === 'pix' ? 'PIX' : pagamento === 'cartao' ? 'Cartão na entrega' : 'Dinheiro'}` +
+      (pagamento === 'dinheiro' && troco ? `\n*Precisa de troco para:* ${formatarPreco(parseFloat(troco))}` : '')
 
-    const destino = whatsappLoja ? `/${whatsappLoja}` : ''
-    const url = `https://wa.me${destino}?text=${encodeURIComponent(mensagem)}`
+    const url = `https://wa.me/?text=${encodeURIComponent(mensagem)}`
     window.open(url, '_blank')
-    window.location.href = acompanhamentoUrl
   }
+
+  // Sugestões de troco
+  const sugestoesTroco = [50, 100, 200].filter(valor => valor > total)
 
   return (
     <div className="fixed inset-0 bg-white z-40 overflow-y-auto">
@@ -116,7 +117,7 @@ export default function Checkout({ onVoltar, onSucesso }: CheckoutProps) {
         </div>
 
         <div>
-          <h3 className="font-bold text-lg mb-3">Endereco de Entrega</h3>
+          <h3 className="font-bold text-lg mb-3">Endereço de Entrega</h3>
           <div className="space-y-3">
             <input
               type="text"
@@ -129,7 +130,7 @@ export default function Checkout({ onVoltar, onSucesso }: CheckoutProps) {
             <div className="grid grid-cols-2 gap-3">
               <input
                 type="text"
-                placeholder="Numero *"
+                placeholder="Número *"
                 value={numero}
                 onChange={(e) => setNumero(e.target.value)}
                 className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-primary"
@@ -146,7 +147,7 @@ export default function Checkout({ onVoltar, onSucesso }: CheckoutProps) {
             </div>
             <input
               type="text"
-              placeholder="Referencia (opcional)"
+              placeholder="Referência (opcional)"
               value={referencia}
               onChange={(e) => setReferencia(e.target.value)}
               className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-primary"
@@ -175,7 +176,7 @@ export default function Checkout({ onVoltar, onSucesso }: CheckoutProps) {
                 onChange={(e) => setPagamento(e.target.value as any)}
                 className="w-5 h-5"
               />
-              <span className="font-medium">Cartao na entrega</span>
+              <span className="font-medium">Cartão na entrega</span>
             </label>
             <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
               <input
@@ -189,16 +190,99 @@ export default function Checkout({ onVoltar, onSucesso }: CheckoutProps) {
             </label>
           </div>
 
+          {/* PIX - Mostrar chave após seleção */}
+          {pagamento === 'pix' && (
+            <div className="mt-4 p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
+              <div className="flex items-center gap-2 mb-3">
+                <DollarSign className="text-blue-600" size={20} />
+                <h4 className="font-bold text-blue-900">Dados para Pagamento PIX</h4>
+              </div>
+              
+              <div className="space-y-3">
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">Chave PIX (Email):</p>
+                  <div className="flex items-center gap-2">
+                    <code className="flex-1 bg-white px-3 py-2 rounded border font-mono text-sm">
+                      {CHAVE_PIX}
+                    </code>
+                    <button
+                      type="button"
+                      onClick={copiarChavePix}
+                      className={`px-4 py-2 rounded font-medium transition-colors ${
+                        pixCopiado 
+                          ? 'bg-green-500 text-white' 
+                          : 'bg-blue-600 hover:bg-blue-700 text-white'
+                      }`}
+                    >
+                      {pixCopiado ? (
+                        <span className="flex items-center gap-1">
+                          <CheckCircle size={16} />
+                          Copiado!
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1">
+                          <Copy size={16} />
+                          Copiar
+                        </span>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="bg-white p-3 rounded border">
+                  <p className="text-sm text-gray-600 mb-1">Valor a pagar:</p>
+                  <p className="text-2xl font-bold text-blue-600">{formatarPreco(total)}</p>
+                </div>
+
+                <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
+                  <p className="text-sm text-yellow-800">
+                    <strong>Importante:</strong> Após realizar o pagamento, aguarde a confirmação do atendente via WhatsApp. 
+                    Seu pedido será preparado assim que o pagamento for confirmado.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Dinheiro - Campo de troco melhorado */}
           {pagamento === 'dinheiro' && (
-            <input
-              type="number"
-              step="0.01"
-              placeholder="Precisa de troco para quanto? *"
-              value={troco}
-              onChange={(e) => setTroco(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg p-3 mt-3 focus:outline-none focus:ring-2 focus:ring-primary"
-              required
-            />
+            <div className="mt-4 space-y-3">
+              <input
+                type="number"
+                step="0.01"
+                placeholder="Precisa de troco para quanto? *"
+                value={troco}
+                onChange={(e) => setTroco(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-primary"
+                required
+              />
+              
+              {sugestoesTroco.length > 0 && (
+                <div>
+                  <p className="text-sm text-gray-600 mb-2">Sugestões:</p>
+                  <div className="flex gap-2">
+                    {sugestoesTroco.map(valor => (
+                      <button
+                        key={valor}
+                        type="button"
+                        onClick={() => setTroco(valor.toString())}
+                        className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors"
+                      >
+                        {formatarPreco(valor)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {troco && parseFloat(troco) >= total && (
+                <div className="bg-green-50 border border-green-200 rounded p-3">
+                  <p className="text-sm text-green-800">
+                    <strong>Troco:</strong> {formatarPreco(parseFloat(troco) - total)}
+                  </p>
+                </div>
+              )}
+            </div>
           )}
         </div>
 
@@ -224,7 +308,7 @@ export default function Checkout({ onVoltar, onSucesso }: CheckoutProps) {
           >
             Confirmar Pedido
           </button>
-
+          
           <button
             type="button"
             onClick={finalizarWhatsApp}
