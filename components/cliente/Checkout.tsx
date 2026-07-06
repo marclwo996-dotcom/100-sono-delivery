@@ -80,45 +80,48 @@ export default function Checkout({ onVoltar, onSucesso }: CheckoutProps) {
   const sugestoesTroco = [50, 100, 200].filter(valor => valor > total)
 
   return (
-    <div className="fixed inset-0 bg-white z-40 overflow-y-auto">
-      <div className="sticky top-0 bg-white border-b p-4 flex items-center gap-4">
-        <button onClick={onVoltar} className="p-2 hover:bg-gray-100 rounded-full">
+    <div className="fixed inset-0 z-40 overflow-y-auto bg-white">
+      <div className="sticky top-0 z-10 flex items-center gap-3 border-b bg-white p-3 shadow-sm sm:gap-4 sm:p-4">
+        <button onClick={onVoltar} className="rounded-full p-2 hover:bg-gray-100" aria-label="Voltar para o carrinho">
           <ArrowLeft size={24} />
         </button>
-        <h2 className="text-2xl font-bold">Finalizar Pedido</h2>
+        <h2 className="text-xl font-black sm:text-2xl">Finalizar Pedido</h2>
       </div>
 
-      <form onSubmit={handleSubmit} className="p-4 space-y-6 max-w-2xl mx-auto">
+      <form onSubmit={handleSubmit} className="mx-auto max-w-2xl space-y-6 p-4 pb-36">
         <div>
-          <h3 className="font-bold text-lg mb-3">Seus Dados</h3>
+          <h3 className="mb-3 text-lg font-black">Seus Dados</h3>
           <input
             type="text"
+            autoComplete="name"
             placeholder="Nome completo *"
             value={nome}
             onChange={(e) => setNome(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-primary"
+            className="h-12 w-full rounded-md border border-gray-300 p-3 text-base focus:outline-none focus:ring-2 focus:ring-primary"
             required
           />
         </div>
 
         <div>
-          <h3 className="font-bold text-lg mb-3">Endereço de Entrega</h3>
+          <h3 className="mb-3 text-lg font-black">Endereço de Entrega</h3>
           <div className="space-y-3">
             <input
               type="text"
+              autoComplete="street-address"
               placeholder="Rua *"
               value={rua}
               onChange={(e) => setRua(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-primary"
+              className="h-12 w-full rounded-md border border-gray-300 p-3 text-base focus:outline-none focus:ring-2 focus:ring-primary"
               required
             />
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <input
                 type="text"
+                inputMode="numeric"
                 placeholder="Número *"
                 value={numero}
                 onChange={(e) => setNumero(e.target.value)}
-                className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-primary"
+                className="h-12 rounded-md border border-gray-300 p-3 text-base focus:outline-none focus:ring-2 focus:ring-primary"
                 required
               />
               <input
@@ -126,7 +129,7 @@ export default function Checkout({ onVoltar, onSucesso }: CheckoutProps) {
                 placeholder="Bairro *"
                 value={bairro}
                 onChange={(e) => setBairro(e.target.value)}
-                className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-primary"
+                className="h-12 rounded-md border border-gray-300 p-3 text-base focus:outline-none focus:ring-2 focus:ring-primary"
                 required
               />
             </div>
@@ -135,15 +138,15 @@ export default function Checkout({ onVoltar, onSucesso }: CheckoutProps) {
               placeholder="Referência (opcional)"
               value={referencia}
               onChange={(e) => setReferencia(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-primary"
+              className="h-12 w-full rounded-md border border-gray-300 p-3 text-base focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
         </div>
 
         <div>
-          <h3 className="font-bold text-lg mb-3">Forma de Pagamento</h3>
+          <h3 className="mb-3 text-lg font-black">Forma de Pagamento</h3>
           <div className="space-y-2">
-            <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+            <label className="flex cursor-pointer items-center gap-3 rounded-md border p-3 hover:bg-gray-50">
               <input
                 type="radio"
                 value="pix"
@@ -153,7 +156,7 @@ export default function Checkout({ onVoltar, onSucesso }: CheckoutProps) {
               />
               <span className="font-medium">PIX</span>
             </label>
-            <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+            <label className="flex cursor-pointer items-center gap-3 rounded-md border p-3 hover:bg-gray-50">
               <input
                 type="radio"
                 value="cartao"
@@ -163,7 +166,7 @@ export default function Checkout({ onVoltar, onSucesso }: CheckoutProps) {
               />
               <span className="font-medium">Cartão na entrega</span>
             </label>
-            <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+            <label className="flex cursor-pointer items-center gap-3 rounded-md border p-3 hover:bg-gray-50">
               <input
                 type="radio"
                 value="dinheiro"
@@ -179,24 +182,25 @@ export default function Checkout({ onVoltar, onSucesso }: CheckoutProps) {
             <div className="mt-4 space-y-3">
               <input
                 type="number"
+                inputMode="decimal"
                 step="0.01"
                 placeholder="Precisa de troco para quanto? *"
                 value={troco}
                 onChange={(e) => setTroco(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-primary"
+                className="h-12 w-full rounded-md border border-gray-300 p-3 text-base focus:outline-none focus:ring-2 focus:ring-primary"
                 required
               />
               
               {sugestoesTroco.length > 0 && (
                 <div>
                   <p className="text-sm text-gray-600 mb-2">Sugestões:</p>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {sugestoesTroco.map(valor => (
                       <button
                         key={valor}
                         type="button"
                         onClick={() => setTroco(valor.toString())}
-                        className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors"
+                        className="rounded-md bg-gray-100 px-4 py-2 font-medium transition-colors hover:bg-gray-200"
                       >
                         {formatarPreco(valor)}
                       </button>
@@ -206,7 +210,7 @@ export default function Checkout({ onVoltar, onSucesso }: CheckoutProps) {
               )}
 
               {troco && parseFloat(troco) >= total && (
-                <div className="bg-green-50 border border-green-200 rounded p-3">
+                <div className="rounded-md border border-green-200 bg-green-50 p-3">
                   <p className="text-sm text-green-800">
                     <strong>Troco:</strong> {formatarPreco(parseFloat(troco) - total)}
                   </p>
@@ -231,10 +235,14 @@ export default function Checkout({ onVoltar, onSucesso }: CheckoutProps) {
           </div>
         </div>
 
-        <div className="space-y-3">
+        <div className="fixed bottom-0 left-0 right-0 z-20 space-y-2 border-t bg-white p-4 shadow-[0_-10px_25px_rgba(0,0,0,0.08)] sm:static sm:border-0 sm:p-0 sm:shadow-none">
+          <div className="flex justify-between text-lg font-black sm:hidden">
+            <span>Total</span>
+            <span className="text-primary">{formatarPreco(total)}</span>
+          </div>
           <button
             type="submit"
-            className="w-full bg-primary hover:bg-orange-600 text-white font-bold py-4 rounded-lg transition-colors"
+            className="w-full rounded-md bg-primary py-3.5 font-black text-white transition-colors hover:bg-[#b9141a]"
           >
             Confirmar Pedido
           </button>
@@ -242,7 +250,7 @@ export default function Checkout({ onVoltar, onSucesso }: CheckoutProps) {
           <button
             type="button"
             onClick={finalizarWhatsApp}
-            className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+            className="flex w-full items-center justify-center gap-2 rounded-md bg-green-600 py-3.5 font-black text-white transition-colors hover:bg-green-700"
           >
             <MessageCircle size={20} />
             Finalizar via WhatsApp

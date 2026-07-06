@@ -1,43 +1,53 @@
 'use client'
 
-import { Plus, Minus, Sandwich, Package } from 'lucide-react'
+import { Plus, Minus, Sandwich, Package, Pizza } from 'lucide-react'
 import { Produto } from '@/lib/types'
 import { useStore } from '@/lib/store'
 import { formatarPreco } from '@/lib/utils'
 
 interface ItemCardapioProps {
   produto: Produto
+  onMontarPizza?: (produtoId: string) => void
 }
 
-export default function ItemCardapio({ produto }: ItemCardapioProps) {
+export default function ItemCardapio({ produto, onMontarPizza }: ItemCardapioProps) {
   const { carrinho, adicionarAoCarrinho, alterarQuantidade } = useStore()
 
   const itemNoCarrinho = carrinho.find(item => item.produto.id === produto.id)
-  const Icone = produto.categoria === 'porcoes' || produto.categoria === 'combos' ? Package : Sandwich
+  const isPizza = produto.categoria === 'pizzas'
+  const Icone = isPizza ? Pizza : produto.categoria === 'porcoes' || produto.categoria === 'combos' ? Package : Sandwich
 
   return (
-    <div className="flex min-h-[230px] flex-col rounded-md border border-black/10 bg-white p-4 shadow-sm transition-transform hover:-translate-y-0.5 hover:shadow-xl">
+    <div className="flex min-h-[210px] flex-col rounded-md border border-black/10 bg-white p-4 shadow-sm transition-transform hover:-translate-y-0.5 hover:shadow-xl sm:min-h-[230px]">
       <div className="mb-4 flex items-start justify-between gap-3">
-        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md bg-[#ffc72c] text-[#29251f]">
-          <Icone size={28} />
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-[#ffc72c] text-[#29251f] sm:h-14 sm:w-14">
+          <Icone size={isPizza ? 25 : 28} />
         </div>
         <p className="rounded-full bg-red-50 px-3 py-1 text-xs font-black uppercase text-[#d71920]">
-          Pronto rápido
+          {isPizza ? 'Sabor' : 'Pronto rápido'}
         </p>
       </div>
 
       <div className="flex-1">
-        <h3 className="text-xl font-black leading-tight">{produto.nome}</h3>
+        <h3 className="text-lg font-black leading-tight sm:text-xl">{produto.nome}</h3>
         {produto.descricao && (
           <p className="mt-2 line-clamp-3 text-sm font-medium leading-relaxed text-[#6b6257]">{produto.descricao}</p>
         )}
-        <p className="mt-4 text-2xl font-black text-[#d71920]">
-          {formatarPreco(produto.preco)}
+        <p className="mt-4 text-xl font-black text-[#d71920] sm:text-2xl">
+          {isPizza ? `A partir de ${formatarPreco(produto.preco)}` : formatarPreco(produto.preco)}
         </p>
       </div>
 
       <div className="mt-4">
-        {itemNoCarrinho ? (
+        {isPizza && onMontarPizza ? (
+          <button
+            onClick={() => onMontarPizza(produto.id)}
+            className="flex w-full items-center justify-center gap-2 rounded-md bg-[#d71920] py-3 font-black text-white transition-colors hover:bg-[#b9141a]"
+          >
+            <Pizza size={20} />
+            Montar com este sabor
+          </button>
+        ) : itemNoCarrinho ? (
           <div className="flex items-center justify-between rounded-md bg-[#fff3bf] p-2">
             <button
               onClick={() => alterarQuantidade(produto.id, itemNoCarrinho.quantidade - 1)}

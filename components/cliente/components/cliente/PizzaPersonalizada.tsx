@@ -9,11 +9,12 @@ import { TipoBorda } from '@/lib/types'
 
 interface PizzaPersonalizadaProps {
   onFechar: () => void
+  saborInicialId?: string | null
 }
 
 type Etapa = 'tamanho' | 'sabores' | 'borda'
 
-export default function PizzaPersonalizada({ onFechar }: PizzaPersonalizadaProps) {
+export default function PizzaPersonalizada({ onFechar, saborInicialId }: PizzaPersonalizadaProps) {
   const { adicionarAoCarrinho } = useStore()
   const [etapa, setEtapa] = useState<Etapa>('tamanho')
   const [tamanhoSelecionado, setTamanhoSelecionado] = useState<'P' | 'M' | 'G' | 'F' | null>(null)
@@ -25,7 +26,7 @@ export default function PizzaPersonalizada({ onFechar }: PizzaPersonalizadaProps
 
   function handleSelecionarTamanho(tamanho: 'P' | 'M' | 'G' | 'F') {
     setTamanhoSelecionado(tamanho)
-    setSaboresSelecionados([])
+    setSaboresSelecionados(saborInicialId ? [saborInicialId] : [])
     setEtapa('sabores')
   }
 
