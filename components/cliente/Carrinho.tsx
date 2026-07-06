@@ -32,7 +32,7 @@ export default function Carrinho() {
       {totalItens > 0 && (
         <button
           onClick={() => setAberto(true)}
-          className="fixed bottom-4 left-4 right-4 bg-primary hover:bg-orange-600 text-white font-bold py-4 rounded-lg shadow-lg z-20 flex items-center justify-between px-6 transition-colors"
+          className="fixed bottom-4 left-4 right-4 z-20 flex items-center justify-between rounded-md bg-[#d71920] px-5 py-4 font-black text-white shadow-2xl transition-colors hover:bg-[#b9141a] md:left-1/2 md:max-w-2xl md:-translate-x-1/2"
         >
           <div className="flex items-center gap-3">
             <ShoppingCart size={24} />
@@ -43,13 +43,14 @@ export default function Carrinho() {
       )}
 
       {aberto && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-30 flex items-end md:items-center justify-center">
-          <div className="bg-white w-full md:max-w-2xl md:rounded-lg rounded-t-lg max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b p-4 flex items-center justify-between">
-              <h2 className="text-2xl font-bold">Seu Carrinho</h2>
+        <div className="fixed inset-0 z-30 flex items-end justify-center bg-black/55 md:items-center">
+          <div className="max-h-[90vh] w-full overflow-y-auto rounded-t-md bg-white md:max-w-2xl md:rounded-md">
+            <div className="sticky top-0 flex items-center justify-between border-b bg-white p-4">
+              <h2 className="text-2xl font-black">Seu Carrinho</h2>
               <button
                 onClick={() => setAberto(false)}
-                className="p-2 hover:bg-gray-100 rounded-full"
+                className="rounded-full p-2 hover:bg-gray-100"
+                aria-label="Fechar carrinho"
               >
                 <X size={24} />
               </button>
@@ -59,21 +60,24 @@ export default function Carrinho() {
               {carrinho.map(item => (
                 <div key={item.produto.id} className="flex items-center gap-4 border-b pb-4">
                   <div className="flex-1">
-                    <h3 className="font-bold">{item.produto.nome}</h3>
-                    <p className="text-gray-600">{formatarPreco(item.produto.preco)}</p>
+                    <h3 className="font-black">{item.produto.nome}</h3>
+                    {item.observacao && <p className="mt-1 text-xs font-medium text-[#6b6257]">{item.observacao}</p>}
+                    <p className="mt-1 text-[#6b6257]">{formatarPreco(item.produto.preco)}</p>
                   </div>
                   
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => alterarQuantidade(item.produto.id, item.quantidade - 1)}
-                      className="bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5"
+                      className="rounded-full bg-[#d71920] p-1.5 text-white hover:bg-[#b9141a]"
+                      aria-label={`Remover ${item.produto.nome}`}
                     >
                       <Minus size={16} />
                     </button>
                     <span className="font-bold w-8 text-center">{item.quantidade}</span>
                     <button
                       onClick={() => alterarQuantidade(item.produto.id, item.quantidade + 1)}
-                      className="bg-green-500 hover:bg-green-600 text-white rounded-full p-1.5"
+                      className="rounded-full bg-[#198754] p-1.5 text-white hover:bg-[#146c43]"
+                      aria-label={`Adicionar ${item.produto.nome}`}
                     >
                       <Plus size={16} />
                     </button>
@@ -81,7 +85,8 @@ export default function Carrinho() {
 
                   <button
                     onClick={() => removerDoCarrinho(item.produto.id)}
-                    className="text-red-500 hover:text-red-700"
+                    className="text-[#d71920] hover:text-[#b9141a]"
+                    aria-label={`Excluir ${item.produto.nome}`}
                   >
                     <X size={20} />
                   </button>
@@ -99,13 +104,13 @@ export default function Carrinho() {
                 </div>
                 <div className="flex justify-between text-xl font-bold pt-2 border-t">
                   <span>Total</span>
-                  <span className="text-primary">{formatarPreco(totalFinal)}</span>
+                  <span className="text-[#d71920]">{formatarPreco(totalFinal)}</span>
                 </div>
               </div>
 
               <button
                 onClick={() => setCheckoutAberto(true)}
-                className="w-full bg-primary hover:bg-orange-600 text-white font-bold py-4 rounded-lg transition-colors"
+                className="w-full rounded-md bg-[#d71920] py-4 font-black text-white transition-colors hover:bg-[#b9141a]"
               >
                 Finalizar Pedido
               </button>
